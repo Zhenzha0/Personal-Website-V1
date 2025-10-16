@@ -23,6 +23,8 @@ const STATIC_HERO_BACKGROUND = `
   )
 `.replace(/\s+/g, ' ').trim()
 
+type DeviceMode = 'pending' | 'mobile' | 'desktop'
+
 export function HeroSection() {
   const prefersReducedMotion = useReducedMotion()
   const [isLoaded, setIsLoaded] = useState(false)
@@ -44,35 +46,40 @@ export function HeroSection() {
   }, [isInteracting, interactionValue])
   
   // Mobile optimization - reduce animations on smaller screens
-  const [isMobile, setIsMobile] = useState(false)
-  const [isClient, setIsClient] = useState(false)
+  const [deviceMode, setDeviceMode] = useState<DeviceMode>('pending')
+  const isMobile = deviceMode !== 'desktop'
   const disableDynamicEffects = prefersReducedMotion || isMobile
   
   useEffect(() => {
-    setIsClient(true)
-    const checkMobile = () => {
-      if (typeof window !== 'undefined') {
-        setIsMobile(window.innerWidth < 768 || ('ontouchstart' in window))
-      }
+    let frameId: number | null = null
+    const determineDeviceMode = () => {
+      if (typeof window === 'undefined') return
+
+      const nextMode =
+        window.innerWidth < 768 || 'ontouchstart' in window
+          ? 'mobile'
+          : 'desktop'
+
+      setDeviceMode(prev => (prev === nextMode ? prev : nextMode))
     }
     
-    // Initial check with delay to ensure proper mounting
-    const timeoutId = setTimeout(checkMobile, 100)
-    
-    const handleResize = () => {
-      checkMobile()
+    const scheduleDetection = () => {
+      if (frameId !== null) cancelAnimationFrame(frameId)
+      frameId = requestAnimationFrame(determineDeviceMode)
     }
+    
+    scheduleDetection()
     
     if (typeof window !== 'undefined') {
-      window.addEventListener('resize', handleResize)
-      window.addEventListener('orientationchange', handleResize)
+      window.addEventListener('resize', scheduleDetection)
+      window.addEventListener('orientationchange', scheduleDetection)
     }
     
     return () => {
-      clearTimeout(timeoutId)
+      if (frameId !== null) cancelAnimationFrame(frameId)
       if (typeof window !== 'undefined') {
-        window.removeEventListener('resize', handleResize)
-        window.removeEventListener('orientationchange', handleResize)
+        window.removeEventListener('resize', scheduleDetection)
+        window.removeEventListener('orientationchange', scheduleDetection)
       }
     }
   }, [])
