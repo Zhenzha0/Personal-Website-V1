@@ -19,9 +19,22 @@ export function CursorEffects() {
   const [trailNodes, setTrailNodes] = useState<TrailNode[]>([])
   const prefersReducedMotion = useReducedMotion()
   const nodeIdRef = useRef(0)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detect mobile devices
+  useEffect(() => {
+    const checkMobile = () => {
+      if (typeof window !== 'undefined') {
+        setIsMobile(window.innerWidth < 768 || ('ontouchstart' in window))
+      }
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
-    if (prefersReducedMotion) return
+    if (prefersReducedMotion || isMobile) return
 
     const updateMousePosition = (e: MouseEvent) => {
       const newX = e.clientX
@@ -80,7 +93,7 @@ export function CursorEffects() {
 
   // Update trail node opacities
   useEffect(() => {
-    if (prefersReducedMotion || trailNodes.length === 0) return
+    if (prefersReducedMotion || isMobile || trailNodes.length === 0) return
 
     const interval = setInterval(() => {
       setTrailNodes(prev => {
@@ -95,7 +108,8 @@ export function CursorEffects() {
     return () => clearInterval(interval)
   }, [trailNodes.length, prefersReducedMotion])
 
-  if (prefersReducedMotion || !isVisible) return null
+  // Disable on mobile for performance
+  if (prefersReducedMotion || isMobile || !isVisible) return null
 
   const variants = {
     default: {
