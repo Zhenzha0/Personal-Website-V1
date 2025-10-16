@@ -23,10 +23,10 @@ export function SkillCloud({ skills, categoryColor = 'from-slate-500/20 to-gray-
   }
 
   const chipVariants = {
-    hidden: { 
-      opacity: 0, 
-      scale: 0.6,
-      y: 20,
+    hidden: {
+      opacity: 0,
+      scale: 0.9,
+      y: 60,
       rotateX: -15
     },
     visible: (i: number) => ({
@@ -36,10 +36,8 @@ export function SkillCloud({ skills, categoryColor = 'from-slate-500/20 to-gray-
       rotateX: 0,
       transition: {
         delay: prefersReducedMotion ? 0 : i * 0.05,
-        duration: prefersReducedMotion ? 0 : 0.35,
-        ease: [0.23, 1, 0.320, 1],
-        type: "spring",
-        stiffness: 120
+        duration: prefersReducedMotion ? 0 : 0.6,
+        ease: [0.23, 1, 0.32, 1]
       }
     })
   }
