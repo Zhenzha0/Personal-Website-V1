@@ -22,13 +22,13 @@ export function Section({ children, className, id, delay = 0, style }: SectionPr
   const variants = {
     hidden: { 
       opacity: 0, 
-      y: prefersReducedMotion ? 0 : 12 
+      y: prefersReducedMotion ? 0 : 8 
     },
     visible: { 
       opacity: 1, 
       y: 0,
       transition: {
-        duration: prefersReducedMotion ? 0 : 0.6,
+        duration: prefersReducedMotion ? 0 : 0.35,
         delay: prefersReducedMotion ? 0 : delay,
         ease: "easeOut"
       }

@@ -154,10 +154,29 @@ const projects = [
 
 export function ProjectsSection() {
   const containerVariants = {
-    hidden: {},
+    hidden: { opacity: 0 },
     visible: {
+      opacity: 1,
       transition: {
-        staggerChildren: 0.1
+        staggerChildren: 0.12,
+        delayChildren: 0.05
+      }
+    }
+  }
+
+  const cardVariants = {
+    hidden: {
+      opacity: 0,
+      y: 24,
+      scale: 0.97
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.35,
+        ease: [0.23, 1, 0.32, 1]
       }
     }
   }
@@ -168,7 +187,13 @@ export function ProjectsSection() {
       <SectionBackground variant="geometric" intensity="high" />
       
       <div className="container-max section-padding relative z-10">
-        <motion.h2 className="heading text-3xl md:text-4xl lg:text-5xl mb-16 text-center text-accent-blue">
+        <motion.h2 
+          className="heading text-3xl md:text-4xl lg:text-5xl mb-16 text-center text-accent-blue"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-10%" }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
+        >
           Projects
         </motion.h2>
         
@@ -181,7 +206,9 @@ export function ProjectsSection() {
           viewport={{ once: true, margin: "-10%" }}
         >
           {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <motion.div key={project.id} variants={cardVariants}>
+              <ProjectCard project={project} />
+            </motion.div>
           ))}
         </motion.div>
       </div>

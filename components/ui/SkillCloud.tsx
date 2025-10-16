@@ -35,11 +35,11 @@ export function SkillCloud({ skills, categoryColor = 'from-slate-500/20 to-gray-
       y: 0,
       rotateX: 0,
       transition: {
-        delay: prefersReducedMotion ? 0 : i * 0.08,
-        duration: prefersReducedMotion ? 0 : 0.5,
+        delay: prefersReducedMotion ? 0 : i * 0.05,
+        duration: prefersReducedMotion ? 0 : 0.35,
         ease: [0.23, 1, 0.320, 1],
         type: "spring",
-        stiffness: 100
+        stiffness: 120
       }
     })
   }
