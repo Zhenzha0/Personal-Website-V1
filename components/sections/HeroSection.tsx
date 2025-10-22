@@ -88,6 +88,46 @@ export function HeroSection() {
     setIsLoaded(true)
   }, [])
 
+  // IMPORTANT: Call useTransform BEFORE any conditional renders (Rules of Hooks)
+  const dynamicBackground = useTransform(
+    [mouseXSpring, mouseYSpring, interactionSpring],
+    ([x, y, interaction]: number[]) => {
+      // Smooth convergence effect using interaction spring
+      const mouseInfluence = 0.2 + (interaction * 0.5) // 0.2 to 0.7 smoothly
+      const mouseX = x * 100
+      const mouseY = y * 100
+
+      // Blobs converge closer to mouse position with smooth transitions
+      const blob1X = 20 + (mouseX - 20) * mouseInfluence
+      const blob1Y = 30 + (mouseY - 30) * mouseInfluence
+      const blob2X = 80 + (mouseX - 80) * mouseInfluence
+      const blob2Y = 70 + (mouseY - 70) * mouseInfluence
+      const blob3X = 60 + (mouseX - 60) * mouseInfluence
+      const blob3Y = 20 + (mouseY - 20) * mouseInfluence
+
+      // Smooth intensity transition
+      const baseIntensity = 0.25 + (interaction * 0.03)
+
+      return `
+        radial-gradient(ellipse 800px 600px at ${blob1X}% ${blob1Y}%,
+          rgba(59, 130, 246, ${baseIntensity}) 0%,
+          rgba(147, 197, 253, ${baseIntensity * 0.6}) 40%,
+          transparent 70%
+        ),
+        radial-gradient(ellipse 600px 400px at ${blob2X}% ${blob2Y}%,
+          rgba(168, 85, 247, ${baseIntensity * 0.8}) 0%,
+          rgba(196, 181, 253, ${baseIntensity * 0.5}) 50%,
+          transparent 75%
+        ),
+        radial-gradient(ellipse 500px 700px at ${blob3X}% ${blob3Y}%,
+          rgba(34, 197, 94, ${baseIntensity * 0.7}) 0%,
+          rgba(74, 222, 128, ${baseIntensity * 0.4}) 60%,
+          transparent 80%
+        )
+      `.replace(/\s+/g, ' ').trim()
+    }
+  )
+
   // Handle touch/mouse movement for lighting effects
   const handlePointerMove = useCallback((event: React.MouseEvent | React.TouchEvent) => {
     if (!heroRef.current || prefersReducedMotion || isMobile) return
@@ -195,44 +235,7 @@ export function HeroSection() {
         <motion.div
           className="absolute inset-0 opacity-60"
           style={{
-            background: useTransform(
-              [mouseXSpring, mouseYSpring, interactionSpring],
-              ([x, y, interaction]: number[]) => {
-                // Smooth convergence effect using interaction spring
-                const mouseInfluence = 0.2 + (interaction * 0.5) // 0.2 to 0.7 smoothly
-                const mouseX = x * 100
-                const mouseY = y * 100
-
-                // Blobs converge closer to mouse position with smooth transitions
-                const blob1X = 20 + (mouseX - 20) * mouseInfluence
-                const blob1Y = 30 + (mouseY - 30) * mouseInfluence
-                const blob2X = 80 + (mouseX - 80) * mouseInfluence
-                const blob2Y = 70 + (mouseY - 70) * mouseInfluence
-                const blob3X = 60 + (mouseX - 60) * mouseInfluence
-                const blob3Y = 20 + (mouseY - 20) * mouseInfluence
-
-                // Smooth intensity transition
-                const baseIntensity = 0.25 + (interaction * 0.03)
-
-                return `
-                  radial-gradient(ellipse 800px 600px at ${blob1X}% ${blob1Y}%,
-                    rgba(59, 130, 246, ${baseIntensity}) 0%,
-                    rgba(147, 197, 253, ${baseIntensity * 0.6}) 40%,
-                    transparent 70%
-                  ),
-                  radial-gradient(ellipse 600px 400px at ${blob2X}% ${blob2Y}%,
-                    rgba(168, 85, 247, ${baseIntensity * 0.8}) 0%,
-                    rgba(196, 181, 253, ${baseIntensity * 0.5}) 50%,
-                    transparent 75%
-                  ),
-                  radial-gradient(ellipse 500px 700px at ${blob3X}% ${blob3Y}%,
-                    rgba(34, 197, 94, ${baseIntensity * 0.7}) 0%,
-                    rgba(74, 222, 128, ${baseIntensity * 0.4}) 60%,
-                    transparent 80%
-                  )
-                `.replace(/\s+/g, ' ').trim()
-              }
-            ),
+            background: dynamicBackground,
             filter: 'blur(120px)'
           }}
         />
