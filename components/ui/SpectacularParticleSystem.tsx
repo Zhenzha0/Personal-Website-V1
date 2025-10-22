@@ -247,6 +247,7 @@ export function SpectacularParticleSystem() {
     return () => window.removeEventListener('resize', updateDimensions)
   }, [])
 
+  // Return fallback after all hooks have been called
   if (prefersReducedMotion || particles.length === 0) {
     return (
       <div className="absolute inset-0 bg-gradient-to-br from-dark-bg via-slate-900 to-dark-bg opacity-70">

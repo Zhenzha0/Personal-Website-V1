@@ -20,17 +20,19 @@ export function Section({ children, className, id, delay = 0, style }: SectionPr
   const prefersReducedMotion = useReducedMotion()
 
   const variants = {
-    hidden: { 
-      opacity: 0, 
-      y: prefersReducedMotion ? 0 : 12 
+    hidden: {
+      opacity: 0,
+      y: prefersReducedMotion ? 0 : 60,
+      scale: prefersReducedMotion ? 1 : 0.9
     },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
+      scale: 1,
       transition: {
         duration: prefersReducedMotion ? 0 : 0.6,
         delay: prefersReducedMotion ? 0 : delay,
-        ease: "easeOut"
+        ease: [0.23, 1, 0.32, 1]
       }
     }
   }

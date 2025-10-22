@@ -5,6 +5,26 @@ import { ArrowDown } from 'lucide-react'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { useState, useEffect, useRef, useCallback } from 'react'
 
+const STATIC_HERO_BACKGROUND = `
+  radial-gradient(ellipse 800px 600px at 25% 30%,
+    rgba(59, 130, 246, 0.25) 0%,
+    rgba(147, 197, 253, 0.15) 40%,
+    transparent 70%
+  ),
+  radial-gradient(ellipse 600px 400px at 70% 70%,
+    rgba(168, 85, 247, 0.2) 0%,
+    rgba(196, 181, 253, 0.12) 50%,
+    transparent 75%
+  ),
+  radial-gradient(ellipse 500px 700px at 55% 20%,
+    rgba(34, 197, 94, 0.18) 0%,
+    rgba(74, 222, 128, 0.1) 60%,
+    transparent 80%
+  )
+`.replace(/\s+/g, ' ').trim()
+
+type DeviceMode = 'pending' | 'mobile' | 'desktop'
+
 export function HeroSection() {
   const prefersReducedMotion = useReducedMotion()
   const [isLoaded, setIsLoaded] = useState(false)
@@ -26,34 +46,40 @@ export function HeroSection() {
   }, [isInteracting, interactionValue])
   
   // Mobile optimization - reduce animations on smaller screens
-  const [isMobile, setIsMobile] = useState(false)
-  const [isClient, setIsClient] = useState(false)
+  const [deviceMode, setDeviceMode] = useState<DeviceMode>('pending')
+  const isMobile = deviceMode !== 'desktop'
+  const disableDynamicEffects = prefersReducedMotion || isMobile
   
   useEffect(() => {
-    setIsClient(true)
-    const checkMobile = () => {
-      if (typeof window !== 'undefined') {
-        setIsMobile(window.innerWidth < 768 || ('ontouchstart' in window))
-      }
+    let frameId: number | null = null
+    const determineDeviceMode = () => {
+      if (typeof window === 'undefined') return
+
+      const nextMode =
+        window.innerWidth < 768 || 'ontouchstart' in window
+          ? 'mobile'
+          : 'desktop'
+
+      setDeviceMode(prev => (prev === nextMode ? prev : nextMode))
     }
     
-    // Initial check with delay to ensure proper mounting
-    const timeoutId = setTimeout(checkMobile, 100)
-    
-    const handleResize = () => {
-      checkMobile()
+    const scheduleDetection = () => {
+      if (frameId !== null) cancelAnimationFrame(frameId)
+      frameId = requestAnimationFrame(determineDeviceMode)
     }
+    
+    scheduleDetection()
     
     if (typeof window !== 'undefined') {
-      window.addEventListener('resize', handleResize)
-      window.addEventListener('orientationchange', handleResize)
+      window.addEventListener('resize', scheduleDetection)
+      window.addEventListener('orientationchange', scheduleDetection)
     }
     
     return () => {
-      clearTimeout(timeoutId)
+      if (frameId !== null) cancelAnimationFrame(frameId)
       if (typeof window !== 'undefined') {
-        window.removeEventListener('resize', handleResize)
-        window.removeEventListener('orientationchange', handleResize)
+        window.removeEventListener('resize', scheduleDetection)
+        window.removeEventListener('orientationchange', scheduleDetection)
       }
     }
   }, [])
@@ -62,9 +88,86 @@ export function HeroSection() {
     setIsLoaded(true)
   }, [])
 
+  // IMPORTANT: Call useTransform BEFORE any conditional renders (Rules of Hooks)
+  const dynamicBackground = useTransform(
+    [mouseXSpring, mouseYSpring, interactionSpring],
+    ([x, y, interaction]: number[]) => {
+      // Smooth convergence effect using interaction spring
+      const mouseInfluence = 0.2 + (interaction * 0.5) // 0.2 to 0.7 smoothly
+      const mouseX = x * 100
+      const mouseY = y * 100
+
+      // Blobs converge closer to mouse position with smooth transitions
+      const blob1X = 20 + (mouseX - 20) * mouseInfluence
+      const blob1Y = 30 + (mouseY - 30) * mouseInfluence
+      const blob2X = 80 + (mouseX - 80) * mouseInfluence
+      const blob2Y = 70 + (mouseY - 70) * mouseInfluence
+      const blob3X = 60 + (mouseX - 60) * mouseInfluence
+      const blob3Y = 20 + (mouseY - 20) * mouseInfluence
+
+      // Smooth intensity transition
+      const baseIntensity = 0.25 + (interaction * 0.03)
+
+      return `
+        radial-gradient(ellipse 800px 600px at ${blob1X}% ${blob1Y}%,
+          rgba(59, 130, 246, ${baseIntensity}) 0%,
+          rgba(147, 197, 253, ${baseIntensity * 0.6}) 40%,
+          transparent 70%
+        ),
+        radial-gradient(ellipse 600px 400px at ${blob2X}% ${blob2Y}%,
+          rgba(168, 85, 247, ${baseIntensity * 0.8}) 0%,
+          rgba(196, 181, 253, ${baseIntensity * 0.5}) 50%,
+          transparent 75%
+        ),
+        radial-gradient(ellipse 500px 700px at ${blob3X}% ${blob3Y}%,
+          rgba(34, 197, 94, ${baseIntensity * 0.7}) 0%,
+          rgba(74, 222, 128, ${baseIntensity * 0.4}) 60%,
+          transparent 80%
+        )
+      `.replace(/\s+/g, ' ').trim()
+    }
+  )
+
+  // Pre-create transforms for radiating particles (12 particles) - MUST be outside map loop
+  const radiatingParticlesTransforms = Array.from({ length: 12 }, (_, i) => ({
+    opacity: useTransform(interactionSpring, [0, 1], [0.1, 0.4]),
+    scale: useTransform(interactionSpring, [0, 1], [0.5, 1.2]),
+    x: useTransform(mouseXSpring, [0, 1], [-5 + i * 2, 5 - i * 2]),
+    y: useTransform(mouseYSpring, [0, 1], [-3 + i, 3 - i]),
+  }))
+
+  // Pre-create transforms for following particles (18 particles) - MUST be outside map loop
+  const followingParticlesTransforms = Array.from({ length: 18 }, (_, i) => ({
+    left: useTransform(
+      [mouseXSpring, mouseYSpring, interactionSpring],
+      ([x, y, interaction]: number[]) => {
+        const mouseInfluence = 0.2 + (interaction * 0.5)
+        const mouseX = x * 100
+        const blobX = i < 6 ? 20 + (mouseX - 20) * mouseInfluence :
+                     i < 12 ? 80 + (mouseX - 80) * mouseInfluence :
+                             60 + (mouseX - 60) * mouseInfluence
+        return `${blobX + (i * 2 - 18)}%`
+      }
+    ),
+    top: useTransform(
+      [mouseXSpring, mouseYSpring, interactionSpring],
+      ([x, y, interaction]: number[]) => {
+        const mouseInfluence = 0.2 + (interaction * 0.5)
+        const mouseY = y * 100
+        const blobY = i < 6 ? 30 + (mouseY - 30) * mouseInfluence :
+                     i < 12 ? 70 + (mouseY - 70) * mouseInfluence :
+                             20 + (mouseY - 20) * mouseInfluence
+        return `${blobY + (i * 1.5 - 13)}%`
+      }
+    ),
+    opacity: useTransform(interactionSpring, [0, 1], [0.3, 0.8]),
+    scale: useTransform(interactionSpring, [0, 1], [0.8, 1.5]),
+  }))
+
+
   // Handle touch/mouse movement for lighting effects
   const handlePointerMove = useCallback((event: React.MouseEvent | React.TouchEvent) => {
-    if (!heroRef.current || prefersReducedMotion) return
+    if (!heroRef.current || prefersReducedMotion || isMobile) return
     
     try {
       const rect = heroRef.current.getBoundingClientRect()
@@ -92,7 +195,7 @@ export function HeroSection() {
       // Silently handle any touch/mouse errors on mobile
       console.warn('Touch/mouse handling error:', error)
     }
-  }, [mouseX, mouseY, prefersReducedMotion])
+  }, [mouseX, mouseY, prefersReducedMotion, isMobile])
 
   const scrollToNext = () => {
     if (typeof window !== 'undefined') {
@@ -143,89 +246,62 @@ export function HeroSection() {
     <section
       ref={heroRef}
       className="relative flex items-center justify-center overflow-hidden pt-28 sm:pt-32"
-      onMouseMove={handlePointerMove}
-      onTouchMove={handlePointerMove}
-      onMouseEnter={() => !prefersReducedMotion && setIsInteracting(true)}
-      onMouseLeave={() => setIsInteracting(false)}
-      onTouchStart={(e) => {
-        if (!prefersReducedMotion) {
-          setIsInteracting(true)
-          handlePointerMove(e)
-        }
+      onMouseMove={disableDynamicEffects ? undefined : handlePointerMove}
+      onTouchMove={disableDynamicEffects ? undefined : handlePointerMove}
+      onMouseEnter={disableDynamicEffects ? undefined : () => setIsInteracting(true)}
+      onMouseLeave={disableDynamicEffects ? undefined : () => setIsInteracting(false)}
+      onTouchStart={disableDynamicEffects ? undefined : (e) => {
+        setIsInteracting(true)
+        handlePointerMove(e)
       }}
-      onTouchEnd={() => setIsInteracting(false)}
+      onTouchEnd={disableDynamicEffects ? undefined : () => setIsInteracting(false)}
     >
       {/* Base background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-black" />
       
       {/* Autonomous fluid animation with subtle mouse influence */}
-      <motion.div
-        className="absolute inset-0 opacity-60"
-        style={{
-          background: useTransform(
-            [mouseXSpring, mouseYSpring, interactionSpring],
-            ([x, y, interaction]: number[]) => {
-              // Smooth convergence effect using interaction spring
-              const mouseInfluence = 0.2 + (interaction * 0.5) // 0.2 to 0.7 smoothly
-              const mouseX = x * 100
-              const mouseY = y * 100
-              
-              // Blobs converge closer to mouse position with smooth transitions
-              const blob1X = 20 + (mouseX - 20) * mouseInfluence
-              const blob1Y = 30 + (mouseY - 30) * mouseInfluence
-              const blob2X = 80 + (mouseX - 80) * mouseInfluence
-              const blob2Y = 70 + (mouseY - 70) * mouseInfluence  
-              const blob3X = 60 + (mouseX - 60) * mouseInfluence
-              const blob3Y = 20 + (mouseY - 20) * mouseInfluence
-              
-              // Smooth intensity transition
-              const baseIntensity = 0.25 + (interaction * 0.03)
-              
-              return `
-                radial-gradient(ellipse 800px 600px at ${blob1X}% ${blob1Y}%, 
-                  rgba(59, 130, 246, ${baseIntensity}) 0%, 
-                  rgba(147, 197, 253, ${baseIntensity * 0.6}) 40%, 
-                  transparent 70%
-                ),
-                radial-gradient(ellipse 600px 400px at ${blob2X}% ${blob2Y}%, 
-                  rgba(168, 85, 247, ${baseIntensity * 0.8}) 0%, 
-                  rgba(196, 181, 253, ${baseIntensity * 0.5}) 50%, 
-                  transparent 75%
-                ),
-                radial-gradient(ellipse 500px 700px at ${blob3X}% ${blob3Y}%, 
-                  rgba(34, 197, 94, ${baseIntensity * 0.7}) 0%, 
-                  rgba(74, 222, 128, ${baseIntensity * 0.4}) 60%, 
-                  transparent 80%
-                )
-              `.replace(/\s+/g, ' ').trim()
-            }
-          ),
-          filter: 'blur(120px)'
-        }}
-      />
+      {disableDynamicEffects ? (
+        <div
+          className="absolute inset-0 opacity-55"
+          style={{
+            background: STATIC_HERO_BACKGROUND,
+            filter: 'blur(60px)'
+          }}
+        />
+      ) : (
+        <motion.div
+          className="absolute inset-0 opacity-60"
+          style={{
+            background: dynamicBackground,
+            filter: 'blur(120px)'
+          }}
+        />
+      )}
 
-      {/* Secondary flowing depth layer */}
-      <motion.div
-        className="absolute inset-0 opacity-30"
-        animate={{
-          background: [
-            `conic-gradient(from 0deg at 30% 40%, rgba(59, 130, 246, 0.1) 0deg, rgba(168, 85, 247, 0.06) 120deg, rgba(34, 197, 94, 0.08) 240deg, rgba(59, 130, 246, 0.1) 360deg)`,
-            `conic-gradient(from 45deg at 70% 60%, rgba(59, 130, 246, 0.12) 0deg, rgba(168, 85, 247, 0.08) 120deg, rgba(34, 197, 94, 0.1) 240deg, rgba(59, 130, 246, 0.12) 360deg)`,
-            `conic-gradient(from 90deg at 50% 30%, rgba(59, 130, 246, 0.11) 0deg, rgba(168, 85, 247, 0.09) 120deg, rgba(34, 197, 94, 0.09) 240deg, rgba(59, 130, 246, 0.11) 360deg)`,
-            `conic-gradient(from 135deg at 40% 70%, rgba(59, 130, 246, 0.1) 0deg, rgba(168, 85, 247, 0.07) 120deg, rgba(34, 197, 94, 0.08) 240deg, rgba(59, 130, 246, 0.1) 360deg)`,
-            `conic-gradient(from 0deg at 30% 40%, rgba(59, 130, 246, 0.1) 0deg, rgba(168, 85, 247, 0.06) 120deg, rgba(34, 197, 94, 0.08) 240deg, rgba(59, 130, 246, 0.1) 360deg)`
-          ]
-        }}
-        transition={{
-          duration: 18,
-          ease: "easeInOut",
-          repeat: Infinity,
-          times: [0, 0.25, 0.5, 0.75, 1]
-        }}
-        style={{
-          filter: 'blur(150px)'
-        }}
-      />
+      {/* Secondary flowing depth layer - disabled on mobile/reduced motion for performance */}
+      {!disableDynamicEffects && (
+        <motion.div
+          className="absolute inset-0 opacity-30"
+          animate={{
+            background: [
+              `conic-gradient(from 0deg at 30% 40%, rgba(59, 130, 246, 0.1) 0deg, rgba(168, 85, 247, 0.06) 120deg, rgba(34, 197, 94, 0.08) 240deg, rgba(59, 130, 246, 0.1) 360deg)`,
+              `conic-gradient(from 45deg at 70% 60%, rgba(59, 130, 246, 0.12) 0deg, rgba(168, 85, 247, 0.08) 120deg, rgba(34, 197, 94, 0.1) 240deg, rgba(59, 130, 246, 0.12) 360deg)`,
+              `conic-gradient(from 90deg at 50% 30%, rgba(59, 130, 246, 0.11) 0deg, rgba(168, 85, 247, 0.09) 120deg, rgba(34, 197, 94, 0.09) 240deg, rgba(59, 130, 246, 0.11) 360deg)`,
+              `conic-gradient(from 135deg at 40% 70%, rgba(59, 130, 246, 0.1) 0deg, rgba(168, 85, 247, 0.07) 120deg, rgba(34, 197, 94, 0.08) 240deg, rgba(59, 130, 246, 0.1) 360deg)`,
+              `conic-gradient(from 0deg at 30% 40%, rgba(59, 130, 246, 0.1) 0deg, rgba(168, 85, 247, 0.06) 120deg, rgba(34, 197, 94, 0.08) 240deg, rgba(59, 130, 246, 0.1) 360deg)`
+            ]
+          }}
+          transition={{
+            duration: 18,
+            ease: "easeInOut",
+            repeat: Infinity,
+            times: [0, 0.25, 0.5, 0.75, 1]
+          }}
+          style={{
+            filter: 'blur(150px)'
+          }}
+        />
+      )}
 
       {/* Animated grid pattern */}
       <div className="absolute inset-0 opacity-20">
@@ -241,15 +317,14 @@ export function HeroSection() {
         />
       </div>
 
-      {/* Enhanced floating particles with radiating effects */}
+      {/* Enhanced floating particles with radiating effects - optimized for mobile */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Main floating particles */}
-        {[...Array(6)].map((_, i) => (
+        {[...Array(disableDynamicEffects ? 0 : isMobile ? 3 : 6)].map((_, i) => (
           <motion.div
             key={`particle-${i}`}
             className="absolute w-1.5 h-1.5 bg-blue-400/30 rounded-full"
             style={{
-              display: isMobile && i >= 3 ? 'none' as const : undefined,
               left: `${20 + (i * (isMobile ? 30 : 15))}%`,
               top: `${30 + (i * 8) % 40}%`,
             }}
@@ -266,90 +341,67 @@ export function HeroSection() {
             }}
           />
         ))}
-        
-        {/* Subtle radiating particles that respond to interaction */}
-        {[...Array(12)].map((_, i) => (
-          <motion.div
-            key={`radiate-${i}`}
-            className="absolute w-1 h-1 rounded-full"
-            style={{
-              display: isMobile && i >= 8 ? 'none' as const : undefined,
-              left: `${15 + (i * 8)}%`,
-              top: `${25 + (i % 4) * 20}%`,
-              backgroundColor: `rgba(${i % 3 === 0 ? '59, 130, 246' : i % 3 === 1 ? '168, 85, 247' : '34, 197, 94'}, 0.3)`,
-              opacity: useTransform(interactionSpring, [0, 1], [0.1, 0.4]),
-              scale: useTransform(interactionSpring, [0, 1], [0.5, 1.2]),
-              x: useTransform(mouseXSpring, [0, 1], [-5 + i * 2, 5 - i * 2]),
-              y: useTransform(mouseYSpring, [0, 1], [-3 + i, 3 - i]),
-            }}
-            animate={prefersReducedMotion ? {} : {
-              y: [-8, 8],
-              opacity: [0.1, 0.5, 0.1],
-              rotate: [0, 360]
-            }}
-            transition={{
-              duration: 6 + i * 0.3,
-              repeat: Infinity,
-              delay: i * 0.2,
-              ease: "easeInOut"
-            }}
-          />
-        ))}
-        
-        {/* Floating particles that follow the fluid lights */}
-        {[...Array(18)].map((_, i) => (
-          <motion.div
-            key={`follow-particle-${i}`}
-            className="absolute w-0.5 h-0.5 rounded-full"
-            style={{
-              display: isMobile && i >= 12 ? 'none' as const : undefined,
-              backgroundColor: `rgba(${i % 3 === 0 ? '59, 130, 246' : i % 3 === 1 ? '168, 85, 247' : '34, 197, 94'}, 0.6)`,
-              left: useTransform(
-                [mouseXSpring, mouseYSpring, interactionSpring],
-                ([x, y, interaction]: number[]) => {
-                  const mouseInfluence = 0.2 + (interaction * 0.5)
-                  const mouseX = x * 100
-                  
-                  // Follow the blob positions with static offset
-                  const blobX = i < 6 ? 20 + (mouseX - 20) * mouseInfluence : 
-                               i < 12 ? 80 + (mouseX - 80) * mouseInfluence : 
-                                       60 + (mouseX - 60) * mouseInfluence
-                  
-                  return `${blobX + (i * 2 - 18)}%`
-                }
-              ),
-              top: useTransform(
-                [mouseXSpring, mouseYSpring, interactionSpring],
-                ([x, y, interaction]: number[]) => {
-                  const mouseInfluence = 0.2 + (interaction * 0.5)
-                  const mouseY = y * 100
-                  
-                  // Follow the blob positions with static offset
-                  const blobY = i < 6 ? 30 + (mouseY - 30) * mouseInfluence : 
-                               i < 12 ? 70 + (mouseY - 70) * mouseInfluence : 
-                                       20 + (mouseY - 20) * mouseInfluence
-                  
-                  return `${blobY + (i * 1.5 - 13)}%`
-                }
-              ),
-              opacity: useTransform(interactionSpring, [0, 1], [0.3, 0.8]),
-              scale: useTransform(interactionSpring, [0, 1], [0.8, 1.5]),
-            }}
-            animate={prefersReducedMotion ? {} : {
-              scale: [0.8, 1.2, 0.8],
-              opacity: [0.3, 0.7, 0.3],
-              x: [0, Math.sin(i) * 15, 0],
-              y: [0, Math.cos(i) * 12, 0],
-              rotate: [0, 180, 360]
-            }}
-            transition={{
-              duration: 3 + i * 0.2,
-              repeat: Infinity,
-              delay: i * 0.15,
-              ease: "easeInOut"
-            }}
-          />
-        ))}
+
+        {/* Disable radiating and following particles on mobile */}
+        {!disableDynamicEffects && (
+          <>
+            {/* Subtle radiating particles that respond to interaction */}
+            {[...Array(12)].map((_, i) => (
+              <motion.div
+                key={`radiate-${i}`}
+                className="absolute w-1 h-1 rounded-full"
+                style={{
+                  left: `${15 + (i * 8)}%`,
+                  top: `${25 + (i % 4) * 20}%`,
+                  backgroundColor: `rgba(${i % 3 === 0 ? '59, 130, 246' : i % 3 === 1 ? '168, 85, 247' : '34, 197, 94'}, 0.3)`,
+                  opacity: radiatingParticlesTransforms[i].opacity,
+                  scale: radiatingParticlesTransforms[i].scale,
+                  x: radiatingParticlesTransforms[i].x,
+                  y: radiatingParticlesTransforms[i].y,
+                }}
+                animate={prefersReducedMotion ? {} : {
+                  y: [-8, 8],
+                  opacity: [0.1, 0.5, 0.1],
+                  rotate: [0, 360]
+                }}
+                transition={{
+                  duration: 6 + i * 0.3,
+                  repeat: Infinity,
+                  delay: i * 0.2,
+                  ease: "easeInOut"
+                }}
+              />
+            ))}
+
+            {/* Floating particles that follow the fluid lights */}
+            {[...Array(18)].map((_, i) => (
+              <motion.div
+                key={`follow-particle-${i}`}
+                className="absolute w-0.5 h-0.5 rounded-full"
+                style={{
+                  backgroundColor: `rgba(${i % 3 === 0 ? '59, 130, 246' : i % 3 === 1 ? '168, 85, 247' : '34, 197, 94'}, 0.6)`,
+                  left: followingParticlesTransforms[i].left,
+                  top: followingParticlesTransforms[i].top,
+                  opacity: followingParticlesTransforms[i].opacity,
+                  scale: followingParticlesTransforms[i].scale,
+                }}
+                animate={prefersReducedMotion ? {} : {
+                  scale: [0.8, 1.2, 0.8],
+                  opacity: [0.3, 0.7, 0.3],
+                  x: [0, Math.sin(i) * 15, 0],
+                  y: [0, Math.cos(i) * 12, 0],
+                  rotate: [0, 180, 360]
+                }}
+                transition={{
+                  duration: 3 + i * 0.2,
+                  repeat: Infinity,
+                  delay: i * 0.15,
+                  ease: "easeInOut"
+                }}
+              />
+            ))}
+          </>
+        )}
       </div>
 
       {/* Main content */}
@@ -362,30 +414,37 @@ export function HeroSection() {
         {/* Greeting */}
         <motion.div
           initial={{ opacity: 0, y: 40, scale: 0.9 }}
-          animate={{ 
-            opacity: 1, 
-            y: 0, 
-            scale: 1,
-            rotate: [0, 1, -1, 0]
-          }}
-          transition={{ 
-            delay: 0.1,
-            duration: 0.6, 
-            ease: [0.25, 0.46, 0.45, 0.94],
-            rotate: { delay: 0.8, duration: 2, ease: "easeInOut" }
-          }}
+          animate={
+            disableDynamicEffects
+              ? { opacity: 1, y: 0, scale: 1 }
+              : { opacity: 1, y: 0, scale: 1, rotate: [0, 1, -1, 0] }
+          }
+          transition={
+            disableDynamicEffects
+              ? { delay: 0.1, duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }
+              : {
+                  delay: 0.1,
+                  duration: 0.6,
+                  ease: [0.25, 0.46, 0.45, 0.94],
+                  rotate: { delay: 0.8, duration: 2, ease: "easeInOut" }
+                }
+          }
           className="mb-6"
         >
-          <motion.p 
+          <motion.p
             className="text-3xl sm:text-4xl md:text-5xl text-blue-400 font-medium tracking-wide"
-            animate={{
+            animate={disableDynamicEffects ? {} : {
               textShadow: [
                 '0 0 20px rgba(59, 130, 246, 0.4)',
                 '0 0 30px rgba(59, 130, 246, 0.6)',
                 '0 0 20px rgba(59, 130, 246, 0.4)'
               ]
             }}
-            transition={{ delay: 1.0, duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            transition={
+              disableDynamicEffects
+                ? { duration: 0.3, ease: "easeOut" }
+                : { delay: 1.0, duration: 3, repeat: Infinity, ease: "easeInOut" }
+            }
           >
             Hello, I'm
           </motion.p>
@@ -399,19 +458,27 @@ export function HeroSection() {
             scale: 0.8,
             rotateX: 15
           }}
-          animate={{ 
-            opacity: 1, 
-            y: 0, 
-            scale: 1,
-            rotateX: 0,
-            rotateY: [0, 5, -5, 0]
-          }}
-          transition={{ 
-            delay: 0.3,
-            duration: 0.8,
-            ease: [0.25, 0.46, 0.45, 0.94],
-            rotateY: { delay: 1.2, duration: 4, ease: "easeInOut", repeat: Infinity }
-          }}
+          animate={
+            disableDynamicEffects
+              ? { opacity: 1, y: 0, scale: 1, rotateX: 0 }
+              : { 
+                  opacity: 1, 
+                  y: 0, 
+                  scale: 1,
+                  rotateX: 0,
+                  rotateY: [0, 5, -5, 0]
+                }
+          }
+          transition={
+            disableDynamicEffects
+              ? { delay: 0.3, duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }
+              : { 
+                  delay: 0.3,
+                  duration: 0.8,
+                  ease: [0.25, 0.46, 0.45, 0.94],
+                  rotateY: { delay: 1.2, duration: 4, ease: "easeInOut", repeat: Infinity }
+                }
+          }
           className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold mb-12 leading-none"
           style={{
             background: 'linear-gradient(135deg, #ffffff 0%, #60a5fa 50%, #34d399 100%)',
@@ -420,7 +487,7 @@ export function HeroSection() {
             backgroundClip: 'text',
             willChange: 'transform'
           }}
-          whileHover={isMobile ? {} : {
+          whileHover={disableDynamicEffects ? {} : {
             scale: 1.02,
             rotateY: 5,
             transition: { duration: 0.2, ease: "easeOut" }
@@ -458,17 +525,25 @@ export function HeroSection() {
             <motion.div 
               className="w-2 h-2 bg-blue-400/60 rounded-full"
               initial={{ scale: 0 }}
-              animate={{ 
-                scale: [0, 1.2, 1],
-                opacity: [0, 1, 0.6]
-              }}
-              transition={{ 
-                delay: 1.0,
-                duration: 0.8, 
-                ease: "easeOut",
-                repeat: Infinity,
-                repeatDelay: 1.2
-              }}
+              animate={
+                disableDynamicEffects
+                  ? { scale: 1, opacity: 0.8 }
+                  : { 
+                      scale: [0, 1.2, 1],
+                      opacity: [0, 1, 0.6]
+                    }
+              }
+              transition={
+                disableDynamicEffects
+                  ? { delay: 1.0, duration: 0.3, ease: "easeOut" }
+                  : { 
+                      delay: 1.0,
+                      duration: 0.8, 
+                      ease: "easeOut",
+                      repeat: Infinity,
+                      repeatDelay: 1.2
+                    }
+              }
             />
             <motion.div 
               className="h-px bg-gradient-to-r from-transparent via-blue-400/50 to-transparent flex-1 max-w-20"
@@ -495,17 +570,21 @@ export function HeroSection() {
           className="mb-12 max-w-4xl mx-auto"
         >
           <motion.p className="text-xl sm:text-2xl md:text-3xl text-slate-400 leading-relaxed">
-            Passionate about transforming ideas into 
+            Passionate about transforming ideas into
             <motion.span
               className="text-blue-300 font-medium"
-              animate={{
+              animate={disableDynamicEffects ? {} : {
                 textShadow: [
                   '0 0 10px rgba(59, 130, 246, 0.5)',
                   '0 0 20px rgba(59, 130, 246, 0.8)',
                   '0 0 10px rgba(59, 130, 246, 0.5)'
                 ]
               }}
-              transition={{ delay: 2.0, duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              transition={
+                disableDynamicEffects
+                  ? { duration: 0.3, ease: "easeOut" }
+                  : { delay: 2.0, duration: 2, repeat: Infinity, ease: "easeInOut" }
+              }
             >
               {' '}innovative AI-powered solutions
             </motion.span>
@@ -522,8 +601,16 @@ export function HeroSection() {
         >
           <motion.div
             className="flex items-center gap-2 text-slate-400 mb-6"
-            animate={{ y: [0, -5, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            animate={
+              disableDynamicEffects
+                ? { y: 0 }
+                : { y: [0, -5, 0] }
+            }
+            transition={
+              disableDynamicEffects
+                ? { duration: 0.4, ease: "easeOut" }
+                : { duration: 2, repeat: Infinity, ease: "easeInOut" }
+            }
           >
             <ArrowDown size={20} className="text-accent-blue" />
             <span className="text-lg font-medium">Discover more about me</span>
@@ -544,22 +631,34 @@ export function HeroSection() {
                 background: 'conic-gradient(from 0deg, transparent, rgba(96, 165, 250, 0.3), transparent)',
                 padding: '2px'
               }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+              animate={disableDynamicEffects ? { rotate: 0 } : { rotate: 360 }}
+              transition={
+                disableDynamicEffects
+                  ? { duration: 0.6, ease: "easeOut" }
+                  : { duration: 6, repeat: Infinity, ease: "linear" }
+              }
             />
 
             {/* Arrow Icon */}
             <motion.div
               className="relative z-10 text-accent-blue"
-              animate={{
-                y: [0, 8, 0],
-                rotateX: [0, 15, 0]
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
+              animate={
+                disableDynamicEffects
+                  ? { y: 0, rotateX: 0 }
+                  : {
+                      y: [0, 8, 0],
+                      rotateX: [0, 15, 0]
+                    }
+              }
+              transition={
+                disableDynamicEffects
+                  ? { duration: 0.4, ease: "easeOut" }
+                  : {
+                      duration: 1.5,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }
+              }
             >
               <ArrowDown size={24} />
             </motion.div>

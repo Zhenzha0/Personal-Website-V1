@@ -63,32 +63,30 @@ export function SkillsSection() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.3
+        staggerChildren: 0.15,
+        delayChildren: 0.1
       }
     }
   }
 
   const headerVariants = {
-    hidden: { opacity: 0, y: 50, rotateX: -15 },
+    hidden: { opacity: 0, y: 60, rotateX: -15 },
     visible: {
       opacity: 1,
       y: 0,
       rotateX: 0,
       transition: {
-        duration: 1,
-        ease: [0.23, 1, 0.320, 1],
-        type: "spring",
-        stiffness: 100
+        duration: 0.6,
+        ease: [0.23, 1, 0.32, 1]
       }
     }
   }
 
   const categoryVariants = {
-    hidden: { 
-      opacity: 0, 
+    hidden: {
+      opacity: 0,
       y: 60,
-      scale: 0.8,
+      scale: 0.9,
       rotateX: -10
     },
     visible: {
@@ -97,10 +95,8 @@ export function SkillsSection() {
       scale: 1,
       rotateX: 0,
       transition: {
-        duration: 0.8,
-        ease: [0.23, 1, 0.320, 1],
-        type: "spring",
-        stiffness: 80
+        duration: 0.6,
+        ease: [0.23, 1, 0.32, 1]
       }
     }
   }
@@ -131,7 +127,7 @@ export function SkillsSection() {
             initial={{ opacity: 0, scale: 0, rotate: -180 }}
             whileInView={{ opacity: 0.1, scale: 1, rotate: 0 }}
             viewport={{ once: true }}
-            transition={{ delay, duration: 1, ease: "easeOut" }}
+            transition={{ delay, duration: 0.6, ease: "easeOut" }}
           >
             <motion.div
               className="p-4 text-accent-blue"
@@ -202,7 +198,7 @@ export function SkillsSection() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.5, duration: 0.8 }}
+              transition={{ delay: 0.1, duration: 0.6 }}
             >
               A comprehensive toolkit spanning from low-level systems to cutting-edge AI, 
               built through hands-on projects and real-world applications.
@@ -258,10 +254,10 @@ export function SkillsSection() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true, margin: "-5%" }}
-                    transition={{ 
-                      delay: categoryIndex * 0.1 + 0.3,
+                    transition={{
+                      delay: categoryIndex * 0.1,
                       duration: 0.6,
-                      ease: "easeOut" 
+                      ease: "easeOut"
                     }}
                   >
                     <SkillCloud 
@@ -281,7 +277,7 @@ export function SkillsSection() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.5, duration: 0.8 }}
+            transition={{ delay: 0.1, duration: 0.6 }}
           >
             <motion.div
               className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-accent-blue/10 to-accent-mint/10 rounded-full border border-accent-blue/20 backdrop-blur-sm"
@@ -317,7 +313,7 @@ export function SkillsSection() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 1, delay: 0.5 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
         />
         
         {/* Animated Line Separator */}
@@ -327,7 +323,7 @@ export function SkillsSection() {
             initial={{ scaleX: 0 }}
             whileInView={{ scaleX: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 1.5, delay: 0.8 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
           />
         </div>
       </div>

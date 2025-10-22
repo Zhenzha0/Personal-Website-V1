@@ -45,23 +45,21 @@ export function EducationSection() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.3
+        staggerChildren: 0.15,
+        delayChildren: 0.1
       }
     }
   }
 
   const headerVariants = {
-    hidden: { opacity: 0, y: 50, rotateX: -15 },
+    hidden: { opacity: 0, y: 60, scale: 0.9 },
     visible: {
       opacity: 1,
       y: 0,
-      rotateX: 0,
+      scale: 1,
       transition: {
-        duration: 1,
-        ease: [0.23, 1, 0.320, 1],
-        type: "spring",
-        stiffness: 100
+        duration: 0.6,
+        ease: [0.23, 1, 0.32, 1]
       }
     }
   }
