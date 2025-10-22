@@ -128,6 +128,43 @@ export function HeroSection() {
     }
   )
 
+  // Pre-create transforms for radiating particles (12 particles) - MUST be outside map loop
+  const radiatingParticlesTransforms = Array.from({ length: 12 }, (_, i) => ({
+    opacity: useTransform(interactionSpring, [0, 1], [0.1, 0.4]),
+    scale: useTransform(interactionSpring, [0, 1], [0.5, 1.2]),
+    x: useTransform(mouseXSpring, [0, 1], [-5 + i * 2, 5 - i * 2]),
+    y: useTransform(mouseYSpring, [0, 1], [-3 + i, 3 - i]),
+  }))
+
+  // Pre-create transforms for following particles (18 particles) - MUST be outside map loop
+  const followingParticlesTransforms = Array.from({ length: 18 }, (_, i) => ({
+    left: useTransform(
+      [mouseXSpring, mouseYSpring, interactionSpring],
+      ([x, y, interaction]: number[]) => {
+        const mouseInfluence = 0.2 + (interaction * 0.5)
+        const mouseX = x * 100
+        const blobX = i < 6 ? 20 + (mouseX - 20) * mouseInfluence :
+                     i < 12 ? 80 + (mouseX - 80) * mouseInfluence :
+                             60 + (mouseX - 60) * mouseInfluence
+        return `${blobX + (i * 2 - 18)}%`
+      }
+    ),
+    top: useTransform(
+      [mouseXSpring, mouseYSpring, interactionSpring],
+      ([x, y, interaction]: number[]) => {
+        const mouseInfluence = 0.2 + (interaction * 0.5)
+        const mouseY = y * 100
+        const blobY = i < 6 ? 30 + (mouseY - 30) * mouseInfluence :
+                     i < 12 ? 70 + (mouseY - 70) * mouseInfluence :
+                             20 + (mouseY - 20) * mouseInfluence
+        return `${blobY + (i * 1.5 - 13)}%`
+      }
+    ),
+    opacity: useTransform(interactionSpring, [0, 1], [0.3, 0.8]),
+    scale: useTransform(interactionSpring, [0, 1], [0.8, 1.5]),
+  }))
+
+
   // Handle touch/mouse movement for lighting effects
   const handlePointerMove = useCallback((event: React.MouseEvent | React.TouchEvent) => {
     if (!heroRef.current || prefersReducedMotion || isMobile) return
@@ -317,10 +354,10 @@ export function HeroSection() {
                   left: `${15 + (i * 8)}%`,
                   top: `${25 + (i % 4) * 20}%`,
                   backgroundColor: `rgba(${i % 3 === 0 ? '59, 130, 246' : i % 3 === 1 ? '168, 85, 247' : '34, 197, 94'}, 0.3)`,
-                  opacity: useTransform(interactionSpring, [0, 1], [0.1, 0.4]),
-                  scale: useTransform(interactionSpring, [0, 1], [0.5, 1.2]),
-                  x: useTransform(mouseXSpring, [0, 1], [-5 + i * 2, 5 - i * 2]),
-                  y: useTransform(mouseYSpring, [0, 1], [-3 + i, 3 - i]),
+                  opacity: radiatingParticlesTransforms[i].opacity,
+                  scale: radiatingParticlesTransforms[i].scale,
+                  x: radiatingParticlesTransforms[i].x,
+                  y: radiatingParticlesTransforms[i].y,
                 }}
                 animate={prefersReducedMotion ? {} : {
                   y: [-8, 8],
@@ -343,36 +380,10 @@ export function HeroSection() {
                 className="absolute w-0.5 h-0.5 rounded-full"
                 style={{
                   backgroundColor: `rgba(${i % 3 === 0 ? '59, 130, 246' : i % 3 === 1 ? '168, 85, 247' : '34, 197, 94'}, 0.6)`,
-                  left: useTransform(
-                    [mouseXSpring, mouseYSpring, interactionSpring],
-                    ([x, y, interaction]: number[]) => {
-                      const mouseInfluence = 0.2 + (interaction * 0.5)
-                      const mouseX = x * 100
-
-                      // Follow the blob positions with static offset
-                      const blobX = i < 6 ? 20 + (mouseX - 20) * mouseInfluence :
-                                   i < 12 ? 80 + (mouseX - 80) * mouseInfluence :
-                                           60 + (mouseX - 60) * mouseInfluence
-
-                      return `${blobX + (i * 2 - 18)}%`
-                    }
-                  ),
-                  top: useTransform(
-                    [mouseXSpring, mouseYSpring, interactionSpring],
-                    ([x, y, interaction]: number[]) => {
-                      const mouseInfluence = 0.2 + (interaction * 0.5)
-                      const mouseY = y * 100
-
-                      // Follow the blob positions with static offset
-                      const blobY = i < 6 ? 30 + (mouseY - 30) * mouseInfluence :
-                                   i < 12 ? 70 + (mouseY - 70) * mouseInfluence :
-                                           20 + (mouseY - 20) * mouseInfluence
-
-                      return `${blobY + (i * 1.5 - 13)}%`
-                    }
-                  ),
-                  opacity: useTransform(interactionSpring, [0, 1], [0.3, 0.8]),
-                  scale: useTransform(interactionSpring, [0, 1], [0.8, 1.5]),
+                  left: followingParticlesTransforms[i].left,
+                  top: followingParticlesTransforms[i].top,
+                  opacity: followingParticlesTransforms[i].opacity,
+                  scale: followingParticlesTransforms[i].scale,
                 }}
                 animate={prefersReducedMotion ? {} : {
                   scale: [0.8, 1.2, 0.8],
