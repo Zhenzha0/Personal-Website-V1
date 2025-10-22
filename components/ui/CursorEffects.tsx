@@ -89,7 +89,7 @@ export function CursorEffects() {
       window.removeEventListener('mouseover', handleMouseEnter)
       window.removeEventListener('mouseout', handleMouseLeave)
     }
-  }, [prefersReducedMotion])
+  }, [prefersReducedMotion, isMobile])
 
   // Update trail node opacities
   useEffect(() => {
@@ -106,10 +106,12 @@ export function CursorEffects() {
     }, 50)
 
     return () => clearInterval(interval)
-  }, [trailNodes.length, prefersReducedMotion])
+  }, [trailNodes.length, prefersReducedMotion, isMobile])
 
-  // Disable on mobile for performance
-  if (prefersReducedMotion || isMobile || !isVisible) return null
+  // Disable on mobile for performance - moved to end after all hooks
+  if (prefersReducedMotion || isMobile || !isVisible) {
+    return null
+  }
 
   const variants = {
     default: {
