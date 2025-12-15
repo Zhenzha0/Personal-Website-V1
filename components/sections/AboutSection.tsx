@@ -181,7 +181,7 @@ export function AboutSection() {
               I'm a Computer Engineering student at the National University of Singapore, 
               passionate about building intelligent systems that solve real-world problems. 
               My experience spans from developing AI-powered process workflow platforms 
-              to creating full-stack applications that impact thousands of users.
+              to creating full-stack applications that impact users.
             </motion.p>
             
             <motion.p
@@ -202,10 +202,8 @@ export function AboutSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.6 }}
             >
-              When I'm not coding, you'll find me leading tech communities at NUS, 
-              organizing startup events through the Computing Technopreneurship Society, 
-              or collaborating with fellow innovators to tackle social impact challenges. 
-              I believe in technology as a force for positive change.
+              I am eager to learn and collaborate with talented individuals through 
+              new opportunities that challenge me to grow and make a meaningful impact.
             </motion.p>
           </motion.div>
         </motion.div>
