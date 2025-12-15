@@ -179,22 +179,22 @@ export function ProjectsSection() {
         className="absolute top-1/3 left-10 w-px h-1/3 bg-gradient-to-b from-transparent via-mono-400/15 to-transparent"
       />
       
-      {/* Large ZZ monogram background with animation */}
+      {/* Large ZZ monogram background with animation - positioned at top for visibility */}
       <div 
-        className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
+        className="absolute top-20 left-0 right-0 flex justify-center pointer-events-none select-none z-[1]"
         aria-hidden="true"
       >
         <span 
-          className="font-zz-monogram text-[45vw] md:text-[40vw] lg:text-[35vw] text-mono-400/40 leading-none animate-zz-breathe"
-          style={{ animationDelay: '2s' }}
+          className="font-zz-monogram text-[45vw] md:text-[40vw] lg:text-[35vw] leading-none animate-zz-breathe"
+          style={{ color: 'rgba(0, 0, 0, 0.10)', animationDelay: '3s' }}
         >
           ZZ
         </span>
       </div>
       
-      {/* Subtle gradient overlays for depth */}
-      <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-mono-100 to-transparent" />
-      <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-mono-100 to-transparent" />
+      {/* Subtle gradient overlays for depth - semi-transparent to show ZZ */}
+      <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-mono-100/80 to-transparent z-[2]" />
+      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-mono-100/80 to-transparent z-[2]" />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
         {/* Section Header - Larger */}

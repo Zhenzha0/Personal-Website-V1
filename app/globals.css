@@ -445,16 +445,14 @@
 @keyframes zz-breathe {
   0%, 100% { 
     transform: scale(1) translateY(0);
-    opacity: 0.04;
   }
   50% { 
-    transform: scale(1.02) translateY(-10px);
-    opacity: 0.06;
+    transform: scale(1.02) translateY(-15px);
   }
 }
 
 .animate-zz-breathe {
-  animation: zz-breathe 8s ease-in-out infinite;
+  animation: zz-breathe 10s ease-in-out infinite;
 }
 
 /* ZZ Monogram font class */

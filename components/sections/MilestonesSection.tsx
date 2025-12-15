@@ -135,21 +135,22 @@ export function MilestonesSection() {
         }}
       />
       
-      {/* Large ZZ monogram background with animation */}
+      {/* Large ZZ monogram background with animation - positioned at top for visibility */}
       <div 
-        className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
+        className="absolute top-20 left-0 right-0 flex justify-center pointer-events-none select-none z-[1]"
         aria-hidden="true"
       >
         <span 
-          className="font-zz-monogram text-[45vw] md:text-[40vw] lg:text-[35vw] text-mono-300/50 leading-none animate-zz-breathe"
+          className="font-zz-monogram text-[45vw] md:text-[40vw] lg:text-[35vw] leading-none animate-zz-breathe"
+          style={{ color: 'rgba(0, 0, 0, 0.12)' }}
         >
           ZZ
         </span>
       </div>
       
-      {/* Subtle gradient overlays for depth */}
-      <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-mono-white to-transparent" />
-      <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-mono-white to-transparent" />
+      {/* Subtle gradient overlays for depth - higher z-index than ZZ but transparent enough to show it */}
+      <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-mono-white/80 to-transparent z-[2]" />
+      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-mono-white/80 to-transparent z-[2]" />
 
       <div className="max-w-6xl mx-auto px-6 lg:px-16 relative z-10">
         {/* Section Header - BIGGER with animation */}
