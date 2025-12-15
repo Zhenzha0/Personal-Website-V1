@@ -179,14 +179,14 @@ export function ProjectsSection() {
         className="absolute top-1/3 left-10 w-px h-1/3 bg-gradient-to-b from-transparent via-mono-400/15 to-transparent"
       />
       
-      {/* Large ZZ monogram background */}
+      {/* Large ZZ monogram background with animation */}
       <div 
         className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
         aria-hidden="true"
       >
         <span 
-          className="text-[40vw] md:text-[35vw] lg:text-[30vw] font-black tracking-tighter text-mono-300/30 leading-none"
-          style={{ fontFamily: "'Bodoni Moda', serif" }}
+          className="font-zz-monogram text-[45vw] md:text-[40vw] lg:text-[35vw] text-mono-400/40 leading-none animate-zz-breathe"
+          style={{ animationDelay: '2s' }}
         >
           ZZ
         </span>

@@ -8,15 +8,15 @@ export function HeroSection() {
   const [isLoaded, setIsLoaded] = useState(false)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const svgRefs = useRef<(SVGSVGElement | null)[]>([])
-
+  
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100)
     return () => clearTimeout(timer)
   }, [])
 
   const scrollToAbout = () => {
-    const aboutSection = document.getElementById('about')
-    if (aboutSection) {
+      const aboutSection = document.getElementById('about')
+      if (aboutSection) {
       aboutSection.scrollIntoView({ behavior: 'smooth' })
     }
   }
@@ -44,9 +44,9 @@ export function HeroSection() {
                 className="relative cursor-pointer"
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
-                style={{
-                  width: 'clamp(45px, 11vw, 200px)',
-                  height: 'clamp(60px, 14vw, 260px)',
+          style={{
+                  width: 'clamp(50px, 12vw, 220px)',
+                  height: 'clamp(70px, 16vw, 300px)',
                   animationDelay: `${index * 0.1}s`,
                 }}
               >
@@ -54,7 +54,7 @@ export function HeroSection() {
                   ref={(el) => { svgRefs.current[index] = el }}
                   viewBox="0 0 100 100"
                   className="w-full h-full overflow-visible"
-                  style={{
+            style={{
                     transform: isLoaded 
                       ? `translateY(${Math.sin((Date.now() / 1000 + index * 0.5)) * 3}px)` 
                       : 'translateY(20px)',
@@ -64,11 +64,11 @@ export function HeroSection() {
                   {/* Solid fill letter */}
                   <text
                     x="50"
-                    y="75"
+                    y="72"
                     textAnchor="middle"
                     className="font-bold"
                     style={{
-                      fontSize: '80px',
+                      fontSize: '85px',
                       fontFamily: 'Playfair Display, Georgia, serif',
                       fill: isHovered ? 'transparent' : '#000',
                       transition: 'fill 0.3s ease, opacity 0.3s ease',
@@ -81,11 +81,11 @@ export function HeroSection() {
                   {/* Weaved stroke letter */}
                   <text
                     x="50"
-                    y="75"
+                    y="72"
                     textAnchor="middle"
                     className="font-bold"
                     style={{
-                      fontSize: '80px',
+                      fontSize: '85px',
                       fontFamily: 'Playfair Display, Georgia, serif',
                       fill: 'none',
                       stroke: '#D97706',
@@ -101,11 +101,11 @@ export function HeroSection() {
                   {/* Ghost outline for depth */}
                   <text
                     x="50"
-                    y="75"
+                    y="72"
                     textAnchor="middle"
                     className="font-bold"
                     style={{
-                      fontSize: '80px',
+                      fontSize: '85px',
                       fontFamily: 'Playfair Display, Georgia, serif',
                       fill: 'none',
                       stroke: isHovered ? '#D97706' : '#E5E5E5',

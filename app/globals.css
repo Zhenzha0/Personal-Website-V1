@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Great+Vibes&family=Bodoni+Moda:wght@700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Great+Vibes&family=Cinzel+Decorative:wght@400;700;900&display=swap');
 
 @layer base {
   html {
@@ -439,6 +439,29 @@
 
 .animate-shimmer {
   animation: shimmer 4s ease-in-out infinite;
+}
+
+/* ZZ Monogram breathing/floating animation */
+@keyframes zz-breathe {
+  0%, 100% { 
+    transform: scale(1) translateY(0);
+    opacity: 0.04;
+  }
+  50% { 
+    transform: scale(1.02) translateY(-10px);
+    opacity: 0.06;
+  }
+}
+
+.animate-zz-breathe {
+  animation: zz-breathe 8s ease-in-out infinite;
+}
+
+/* ZZ Monogram font class */
+.font-zz-monogram {
+  font-family: 'Cinzel Decorative', serif;
+  font-weight: 700;
+  letter-spacing: 0.15em;
 }
 
 /* Wave line animation */
