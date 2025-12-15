@@ -122,31 +122,31 @@ export function HeroSection() {
           })}
         </div>
 
-        {/* Taglines - BIGGER */}
+        {/* Taglines - side by side on all screens with separator */}
         <div 
-          className={`flex flex-col md:flex-row items-center justify-center gap-8 lg:gap-20 transition-all duration-1000 delay-500 ${
+          className={`flex flex-row items-center justify-center gap-4 md:gap-8 lg:gap-16 transition-all duration-1000 delay-500 ${
             isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
           {/* First phrase */}
-          <div className="text-center md:text-right">
-            <p className="text-xl md:text-3xl lg:text-4xl xl:text-5xl text-mono-500 tracking-wide">
+          <div className="text-right">
+            <p className="text-sm md:text-2xl lg:text-3xl xl:text-4xl text-mono-500 tracking-wide">
               NUS Computer
             </p>
-            <p className="text-xl md:text-3xl lg:text-4xl xl:text-5xl text-mono-800 font-medium tracking-wide">
+            <p className="text-sm md:text-2xl lg:text-3xl xl:text-4xl text-mono-800 font-medium tracking-wide">
               Engineering
             </p>
           </div>
 
-          {/* Divider */}
-          <div className="hidden md:block w-px h-20 lg:h-28 bg-mono-300" />
+          {/* Divider - visible on all screens */}
+          <div className="w-px h-12 md:h-16 lg:h-24 bg-mono-300" />
 
           {/* Second phrase */}
-          <div className="text-center md:text-left">
-            <p className="text-xl md:text-3xl lg:text-4xl xl:text-5xl text-mono-500 tracking-wide">
+          <div className="text-left">
+            <p className="text-sm md:text-2xl lg:text-3xl xl:text-4xl text-mono-500 tracking-wide">
               AI Engineer &
             </p>
-            <p className="text-xl md:text-3xl lg:text-4xl xl:text-5xl text-mono-800 font-medium tracking-wide">
+            <p className="text-sm md:text-2xl lg:text-3xl xl:text-4xl text-mono-800 font-medium tracking-wide">
               Fullstack Developer
             </p>
           </div>

@@ -135,14 +135,14 @@ export function MilestonesSection() {
         }}
       />
       
-      {/* Large ZZ monogram background with animation - positioned at top for visibility */}
+      {/* Large ZZ monogram background with animation - positioned lower and more translucent */}
       <div 
-        className="absolute top-20 left-0 right-0 flex justify-center pointer-events-none select-none z-[1]"
+        className="absolute top-1/3 left-0 right-0 flex justify-center pointer-events-none select-none z-[1]"
         aria-hidden="true"
       >
         <span 
           className="font-zz-monogram text-[45vw] md:text-[40vw] lg:text-[35vw] leading-none animate-zz-breathe"
-          style={{ color: 'rgba(0, 0, 0, 0.12)' }}
+          style={{ color: 'rgba(0, 0, 0, 0.06)' }}
         >
           ZZ
         </span>
