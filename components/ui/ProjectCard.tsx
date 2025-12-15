@@ -1,9 +1,7 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { LucideIcon, Github, ExternalLink, Play, X, Presentation } from 'lucide-react'
-import { useReducedMotion } from '@/hooks/useReducedMotion'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 
 interface ProjectCardProps {
@@ -26,9 +24,7 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
-  const prefersReducedMotion = useReducedMotion()
   const Icon = project.icon
-  const ref = useRef<HTMLDivElement>(null)
   const [showVideo, setShowVideo] = useState(false)
 
   const handleInteractiveClick = (event: React.MouseEvent | React.TouchEvent) => {
@@ -36,30 +32,13 @@ export function ProjectCard({ project }: ProjectCardProps) {
   }
 
   return (
-    <div ref={ref} className="project-card group relative h-full">
-      <motion.div
-        className="relative bg-gradient-to-br from-dark-card/60 to-dark-card/30 backdrop-blur-sm border border-dark-border rounded-2xl p-6 h-full transition-all duration-500 overflow-hidden"
+    <div className="project-card group relative h-full">
+      <div
+        className="relative bg-gradient-to-br from-dark-card/60 to-dark-card/30 backdrop-blur-sm border border-dark-border rounded-2xl p-6 h-full"
         style={{
-          transformStyle: 'preserve-3d',
           boxShadow: '0 15px 35px rgba(0,0,0,0.4), 0 5px 15px rgba(0,0,0,0.2)'
         }}
-        whileHover={prefersReducedMotion ? {} : {
-          rotateY: 2,
-          scale: 1.02,
-          boxShadow: '0 25px 60px rgba(96, 165, 250, 0.18), 0 15px 35px rgba(15, 23, 42, 0.45)',
-          borderColor: 'rgba(96, 165, 250, 0.35)',
-          filter: 'drop-shadow(0 0 30px rgba(96, 165, 250, 0.25))',
-          transition: { duration: 0.35, ease: [0.23, 1, 0.320, 1] }
-        }}
-        transition={{ duration: 0.4, ease: [0.23, 1, 0.320, 1] }}
       >
-        <div
-          className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300"
-          style={{
-            background: 'linear-gradient(135deg, rgba(96, 165, 250, 0.12) 0%, rgba(52, 211, 153, 0.12) 100%)'
-          }}
-        />
-
         <div className="relative z-10">
           {/* Header */}
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between mb-4">
@@ -110,7 +89,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <div className="mb-6">
           <h4 className="text-white font-medium mb-3">Technologies</h4>
           <div className="flex flex-wrap gap-2">
-            {project.tech.map((tech, index) => (
+            {project.tech.map((tech) => (
               <span
                 key={tech}
                 className="px-3 py-1 bg-dark-bg/30 border border-dark-border rounded-full text-xs text-slate-300 backdrop-blur-sm"
@@ -249,7 +228,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           )}
         </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Video Modal */}
       {showVideo && (

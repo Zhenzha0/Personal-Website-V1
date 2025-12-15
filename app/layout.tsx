@@ -1,10 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import { SmoothScrollProvider } from '@/components/providers/SmoothScrollProvider'
 import { Navigation } from '@/components/ui/Navigation'
-import { ScrollProgress } from '@/components/ui/ScrollProgress'
-import { FloatingActionButton } from '@/components/ui/FloatingActionButton'
-import { LoadingScreen } from '@/components/ui/LoadingScreen'
+import { PageTransition } from '@/components/ui/PageTransition'
 
 export const metadata: Metadata = {
   title: 'Yang Zhenzhao - AI Engineer & Full-Stack Developer',
@@ -22,7 +19,7 @@ export const metadata: Metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#0F172A',
+  themeColor: '#1e1e2e',
 }
 
 export default function RootLayout({
@@ -32,14 +29,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="antialiased">
-        <LoadingScreen />
-        <SmoothScrollProvider>
-          <ScrollProgress />
-          <Navigation />
-          {children}
-          <FloatingActionButton />
-        </SmoothScrollProvider>
+      <body className="antialiased bg-ctp-base text-ctp-text">
+        <PageTransition />
+        <Navigation />
+        {children}
       </body>
     </html>
   )
