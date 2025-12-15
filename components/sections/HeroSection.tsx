@@ -1,580 +1,169 @@
 'use client'
 
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
-import { ArrowDown } from 'lucide-react'
-import { useReducedMotion } from '@/hooks/useReducedMotion'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { ChevronDown } from 'lucide-react'
+import { ParticleWave } from '@/components/ui/ParticleWave'
 
 export function HeroSection() {
-  const prefersReducedMotion = useReducedMotion()
   const [isLoaded, setIsLoaded] = useState(false)
-  const heroRef = useRef<HTMLDivElement>(null)
-  
-  // Touch/mouse tracking for lighting effects
-  const mouseX = useMotionValue(0)
-  const mouseY = useMotionValue(0)
-  const mouseXSpring = useSpring(mouseX, { damping: 60, stiffness: 60 })
-  const mouseYSpring = useSpring(mouseY, { damping: 60, stiffness: 60 })
-  const [isInteracting, setIsInteracting] = useState(false)
-  
-  // Smooth interaction spring for gradual transitions
-  const interactionValue = useMotionValue(0)
-  const interactionSpring = useSpring(interactionValue, { damping: 40, stiffness: 50 })
-  
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const svgRefs = useRef<(SVGSVGElement | null)[]>([])
+
   useEffect(() => {
-    interactionValue.set(isInteracting ? 1 : 0)
-  }, [isInteracting, interactionValue])
-  
-  // Mobile optimization - reduce animations on smaller screens
-  const [isMobile, setIsMobile] = useState(false)
-  const [isClient, setIsClient] = useState(false)
-  
-  useEffect(() => {
-    setIsClient(true)
-    const checkMobile = () => {
-      if (typeof window !== 'undefined') {
-        setIsMobile(window.innerWidth < 768 || ('ontouchstart' in window))
-      }
-    }
-    
-    // Initial check with delay to ensure proper mounting
-    const timeoutId = setTimeout(checkMobile, 100)
-    
-    const handleResize = () => {
-      checkMobile()
-    }
-    
-    if (typeof window !== 'undefined') {
-      window.addEventListener('resize', handleResize)
-      window.addEventListener('orientationchange', handleResize)
-    }
-    
-    return () => {
-      clearTimeout(timeoutId)
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('resize', handleResize)
-        window.removeEventListener('orientationchange', handleResize)
-      }
-    }
+    const timer = setTimeout(() => setIsLoaded(true), 100)
+    return () => clearTimeout(timer)
   }, [])
 
-  useEffect(() => {
-    setIsLoaded(true)
-  }, [])
-
-  // Handle touch/mouse movement for lighting effects
-  const handlePointerMove = useCallback((event: React.MouseEvent | React.TouchEvent) => {
-    if (!heroRef.current || prefersReducedMotion) return
-    
-    try {
-      const rect = heroRef.current.getBoundingClientRect()
-      let clientX: number, clientY: number
-      
-      if ('touches' in event && event.touches.length > 0) {
-        clientX = event.touches[0].clientX
-        clientY = event.touches[0].clientY
-      } else if ('clientX' in event) {
-        clientX = event.clientX
-        clientY = event.clientY
-      } else {
-        return
-      }
-      
-      // Ensure valid dimensions
-      if (rect.width === 0 || rect.height === 0) return
-      
-      const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
-      const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height))
-      
-      mouseX.set(x)
-      mouseY.set(y)
-    } catch (error) {
-      // Silently handle any touch/mouse errors on mobile
-      console.warn('Touch/mouse handling error:', error)
-    }
-  }, [mouseX, mouseY, prefersReducedMotion])
-
-  const scrollToNext = () => {
-    if (typeof window !== 'undefined') {
-      const aboutSection = document.getElementById('about')
-      if (aboutSection) {
-        // Use native smooth scrolling for better mobile support
-        aboutSection.scrollIntoView({ 
-          behavior: 'smooth',
-          block: 'start',
-          inline: 'nearest'
-        })
-      }
+  const scrollToAbout = () => {
+    const aboutSection = document.getElementById('about')
+    if (aboutSection) {
+      aboutSection.scrollIntoView({ behavior: 'smooth' })
     }
   }
 
-  // Clean animation variants - optimized for mobile
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: isMobile ? 0.1 : 0.2,
-        delayChildren: isMobile ? 0.05 : 0.1
-      }
-    }
-  }
-
-  // Simple text animation - optimized for mobile
-  const textVariants = {
-    hidden: { 
-      opacity: 0,
-      y: isMobile ? 20 : 30,
-      scale: 0.95
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        duration: isMobile ? 0.4 : 0.6,
-        ease: [0.25, 0.46, 0.45, 0.94]
-      }
-    }
-  }
-
+  const name = 'ZHENZHAO'
 
   return (
-    <section
-      ref={heroRef}
-      className="relative flex items-center justify-center overflow-hidden pt-28 sm:pt-32"
-      onMouseMove={handlePointerMove}
-      onTouchMove={handlePointerMove}
-      onMouseEnter={() => !prefersReducedMotion && setIsInteracting(true)}
-      onMouseLeave={() => setIsInteracting(false)}
-      onTouchStart={(e) => {
-        if (!prefersReducedMotion) {
-          setIsInteracting(true)
-          handlePointerMove(e)
-        }
-      }}
-      onTouchEnd={() => setIsInteracting(false)}
-    >
-      {/* Base background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-black" />
+    <section className="min-h-screen flex flex-col items-center justify-center bg-mono-100 pt-24 lg:pt-28 relative overflow-hidden">
+      {/* Particle Wave Background */}
+      <ParticleWave />
       
-      {/* Autonomous fluid animation with subtle mouse influence */}
-      <motion.div
-        className="absolute inset-0 opacity-60"
-        style={{
-          background: useTransform(
-            [mouseXSpring, mouseYSpring, interactionSpring],
-            ([x, y, interaction]: number[]) => {
-              // Smooth convergence effect using interaction spring
-              const mouseInfluence = 0.2 + (interaction * 0.5) // 0.2 to 0.7 smoothly
-              const mouseX = x * 100
-              const mouseY = y * 100
-              
-              // Blobs converge closer to mouse position with smooth transitions
-              const blob1X = 20 + (mouseX - 20) * mouseInfluence
-              const blob1Y = 30 + (mouseY - 30) * mouseInfluence
-              const blob2X = 80 + (mouseX - 80) * mouseInfluence
-              const blob2Y = 70 + (mouseY - 70) * mouseInfluence  
-              const blob3X = 60 + (mouseX - 60) * mouseInfluence
-              const blob3Y = 20 + (mouseY - 20) * mouseInfluence
-              
-              // Smooth intensity transition
-              const baseIntensity = 0.25 + (interaction * 0.03)
-              
-              return `
-                radial-gradient(ellipse 800px 600px at ${blob1X}% ${blob1Y}%, 
-                  rgba(59, 130, 246, ${baseIntensity}) 0%, 
-                  rgba(147, 197, 253, ${baseIntensity * 0.6}) 40%, 
-                  transparent 70%
-                ),
-                radial-gradient(ellipse 600px 400px at ${blob2X}% ${blob2Y}%, 
-                  rgba(168, 85, 247, ${baseIntensity * 0.8}) 0%, 
-                  rgba(196, 181, 253, ${baseIntensity * 0.5}) 50%, 
-                  transparent 75%
-                ),
-                radial-gradient(ellipse 500px 700px at ${blob3X}% ${blob3Y}%, 
-                  rgba(34, 197, 94, ${baseIntensity * 0.7}) 0%, 
-                  rgba(74, 222, 128, ${baseIntensity * 0.4}) 60%, 
-                  transparent 80%
-                )
-              `.replace(/\s+/g, ' ').trim()
-            }
-          ),
-          filter: 'blur(120px)'
-        }}
-      />
-
-      {/* Secondary flowing depth layer */}
-      <motion.div
-        className="absolute inset-0 opacity-30"
-        animate={{
-          background: [
-            `conic-gradient(from 0deg at 30% 40%, rgba(59, 130, 246, 0.1) 0deg, rgba(168, 85, 247, 0.06) 120deg, rgba(34, 197, 94, 0.08) 240deg, rgba(59, 130, 246, 0.1) 360deg)`,
-            `conic-gradient(from 45deg at 70% 60%, rgba(59, 130, 246, 0.12) 0deg, rgba(168, 85, 247, 0.08) 120deg, rgba(34, 197, 94, 0.1) 240deg, rgba(59, 130, 246, 0.12) 360deg)`,
-            `conic-gradient(from 90deg at 50% 30%, rgba(59, 130, 246, 0.11) 0deg, rgba(168, 85, 247, 0.09) 120deg, rgba(34, 197, 94, 0.09) 240deg, rgba(59, 130, 246, 0.11) 360deg)`,
-            `conic-gradient(from 135deg at 40% 70%, rgba(59, 130, 246, 0.1) 0deg, rgba(168, 85, 247, 0.07) 120deg, rgba(34, 197, 94, 0.08) 240deg, rgba(59, 130, 246, 0.1) 360deg)`,
-            `conic-gradient(from 0deg at 30% 40%, rgba(59, 130, 246, 0.1) 0deg, rgba(168, 85, 247, 0.06) 120deg, rgba(34, 197, 94, 0.08) 240deg, rgba(59, 130, 246, 0.1) 360deg)`
-          ]
-        }}
-        transition={{
-          duration: 18,
-          ease: "easeInOut",
-          repeat: Infinity,
-          times: [0, 0.25, 0.5, 0.75, 1]
-        }}
-        style={{
-          filter: 'blur(150px)'
-        }}
-      />
-
-      {/* Animated grid pattern */}
-      <div className="absolute inset-0 opacity-20">
+      <div className="w-full max-w-[95vw] lg:max-w-[90vw] mx-auto px-4 md:px-8 text-center relative z-10">
+        {/* Weaver animated name using SVG - BIGGER */}
         <div 
-          className="absolute inset-0 grid-animation"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px'
-          }}
-        />
+          className={`flex justify-center items-center mb-16 lg:mb-20 transition-opacity duration-1000 ${
+            isLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          {name.split('').map((letter, index) => {
+            const isHovered = hoveredIndex === index
+            
+            return (
+              <div
+                key={index}
+                className="relative cursor-pointer"
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                style={{
+                  width: 'clamp(45px, 11vw, 200px)',
+                  height: 'clamp(60px, 14vw, 260px)',
+                  animationDelay: `${index * 0.1}s`,
+                }}
+              >
+                <svg
+                  ref={(el) => { svgRefs.current[index] = el }}
+                  viewBox="0 0 100 100"
+                  className="w-full h-full overflow-visible"
+                  style={{
+                    transform: isLoaded 
+                      ? `translateY(${Math.sin((Date.now() / 1000 + index * 0.5)) * 3}px)` 
+                      : 'translateY(20px)',
+                    transition: 'transform 0.6s ease-out',
+                  }}
+                >
+                  {/* Solid fill letter */}
+                  <text
+                    x="50"
+                    y="75"
+                    textAnchor="middle"
+                    className="font-bold"
+                    style={{
+                      fontSize: '80px',
+                      fontFamily: 'Playfair Display, Georgia, serif',
+                      fill: isHovered ? 'transparent' : '#000',
+                      transition: 'fill 0.3s ease, opacity 0.3s ease',
+                      opacity: isHovered ? 0 : 1,
+                    }}
+                  >
+                    {letter}
+                  </text>
+                  
+                  {/* Weaved stroke letter */}
+                  <text
+                    x="50"
+                    y="75"
+                    textAnchor="middle"
+                    className="font-bold"
+                    style={{
+                      fontSize: '80px',
+                      fontFamily: 'Playfair Display, Georgia, serif',
+                      fill: 'none',
+                      stroke: '#D97706',
+                      strokeWidth: isHovered ? '1.5' : '0',
+                      strokeDasharray: '1000',
+                      strokeDashoffset: isHovered ? '0' : '1000',
+                      transition: 'stroke-dashoffset 1.5s ease-in-out, stroke-width 0.3s ease',
+                    }}
+                  >
+                    {letter}
+                  </text>
+                  
+                  {/* Ghost outline for depth */}
+                  <text
+                    x="50"
+                    y="75"
+                    textAnchor="middle"
+                    className="font-bold"
+                    style={{
+                      fontSize: '80px',
+                      fontFamily: 'Playfair Display, Georgia, serif',
+                      fill: 'none',
+                      stroke: isHovered ? '#D97706' : '#E5E5E5',
+                      strokeWidth: '0.5',
+                      opacity: isHovered ? 1 : 0.5,
+                      transition: 'stroke 0.3s ease, opacity 0.3s ease',
+                    }}
+                  >
+                    {letter}
+                  </text>
+                </svg>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Taglines - BIGGER */}
+        <div 
+          className={`flex flex-col md:flex-row items-center justify-center gap-8 lg:gap-20 transition-all duration-1000 delay-500 ${
+            isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
+          {/* First phrase */}
+          <div className="text-center md:text-right">
+            <p className="text-xl md:text-3xl lg:text-4xl xl:text-5xl text-mono-500 tracking-wide">
+              NUS Computer
+            </p>
+            <p className="text-xl md:text-3xl lg:text-4xl xl:text-5xl text-mono-800 font-medium tracking-wide">
+              Engineering
+            </p>
+          </div>
+
+          {/* Divider */}
+          <div className="hidden md:block w-px h-20 lg:h-28 bg-mono-300" />
+
+          {/* Second phrase */}
+          <div className="text-center md:text-left">
+            <p className="text-xl md:text-3xl lg:text-4xl xl:text-5xl text-mono-500 tracking-wide">
+              AI Engineer &
+            </p>
+            <p className="text-xl md:text-3xl lg:text-4xl xl:text-5xl text-mono-800 font-medium tracking-wide">
+              Fullstack Developer
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Enhanced floating particles with radiating effects */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Main floating particles */}
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={`particle-${i}`}
-            className="absolute w-1.5 h-1.5 bg-blue-400/30 rounded-full"
-            style={{
-              display: isMobile && i >= 3 ? 'none' as const : undefined,
-              left: `${20 + (i * (isMobile ? 30 : 15))}%`,
-              top: `${30 + (i * 8) % 40}%`,
-            }}
-            animate={prefersReducedMotion ? {} : {
-              y: [-20, 20],
-              opacity: [0.2, 0.6, 0.2],
-              scale: [0.8, 1.2, 0.8]
-            }}
-            transition={{
-              duration: 4 + i,
-              repeat: Infinity,
-              delay: i * 0.5,
-              ease: "easeInOut"
-            }}
-          />
-        ))}
-        
-        {/* Subtle radiating particles that respond to interaction */}
-        {[...Array(12)].map((_, i) => (
-          <motion.div
-            key={`radiate-${i}`}
-            className="absolute w-1 h-1 rounded-full"
-            style={{
-              display: isMobile && i >= 8 ? 'none' as const : undefined,
-              left: `${15 + (i * 8)}%`,
-              top: `${25 + (i % 4) * 20}%`,
-              backgroundColor: `rgba(${i % 3 === 0 ? '59, 130, 246' : i % 3 === 1 ? '168, 85, 247' : '34, 197, 94'}, 0.3)`,
-              opacity: useTransform(interactionSpring, [0, 1], [0.1, 0.4]),
-              scale: useTransform(interactionSpring, [0, 1], [0.5, 1.2]),
-              x: useTransform(mouseXSpring, [0, 1], [-5 + i * 2, 5 - i * 2]),
-              y: useTransform(mouseYSpring, [0, 1], [-3 + i, 3 - i]),
-            }}
-            animate={prefersReducedMotion ? {} : {
-              y: [-8, 8],
-              opacity: [0.1, 0.5, 0.1],
-              rotate: [0, 360]
-            }}
-            transition={{
-              duration: 6 + i * 0.3,
-              repeat: Infinity,
-              delay: i * 0.2,
-              ease: "easeInOut"
-            }}
-          />
-        ))}
-        
-        {/* Floating particles that follow the fluid lights */}
-        {[...Array(18)].map((_, i) => (
-          <motion.div
-            key={`follow-particle-${i}`}
-            className="absolute w-0.5 h-0.5 rounded-full"
-            style={{
-              display: isMobile && i >= 12 ? 'none' as const : undefined,
-              backgroundColor: `rgba(${i % 3 === 0 ? '59, 130, 246' : i % 3 === 1 ? '168, 85, 247' : '34, 197, 94'}, 0.6)`,
-              left: useTransform(
-                [mouseXSpring, mouseYSpring, interactionSpring],
-                ([x, y, interaction]: number[]) => {
-                  const mouseInfluence = 0.2 + (interaction * 0.5)
-                  const mouseX = x * 100
-                  
-                  // Follow the blob positions with static offset
-                  const blobX = i < 6 ? 20 + (mouseX - 20) * mouseInfluence : 
-                               i < 12 ? 80 + (mouseX - 80) * mouseInfluence : 
-                                       60 + (mouseX - 60) * mouseInfluence
-                  
-                  return `${blobX + (i * 2 - 18)}%`
-                }
-              ),
-              top: useTransform(
-                [mouseXSpring, mouseYSpring, interactionSpring],
-                ([x, y, interaction]: number[]) => {
-                  const mouseInfluence = 0.2 + (interaction * 0.5)
-                  const mouseY = y * 100
-                  
-                  // Follow the blob positions with static offset
-                  const blobY = i < 6 ? 30 + (mouseY - 30) * mouseInfluence : 
-                               i < 12 ? 70 + (mouseY - 70) * mouseInfluence : 
-                                       20 + (mouseY - 20) * mouseInfluence
-                  
-                  return `${blobY + (i * 1.5 - 13)}%`
-                }
-              ),
-              opacity: useTransform(interactionSpring, [0, 1], [0.3, 0.8]),
-              scale: useTransform(interactionSpring, [0, 1], [0.8, 1.5]),
-            }}
-            animate={prefersReducedMotion ? {} : {
-              scale: [0.8, 1.2, 0.8],
-              opacity: [0.3, 0.7, 0.3],
-              x: [0, Math.sin(i) * 15, 0],
-              y: [0, Math.cos(i) * 12, 0],
-              rotate: [0, 180, 360]
-            }}
-            transition={{
-              duration: 3 + i * 0.2,
-              repeat: Infinity,
-              delay: i * 0.15,
-              ease: "easeInOut"
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Main content */}
-      <motion.div
-        className="relative z-10 text-center px-6 sm:px-8 max-w-6xl mx-auto"
-        variants={containerVariants}
-        initial="hidden"
-        animate={isLoaded ? "visible" : "hidden"}
+      {/* Scroll indicator - larger */}
+      <button
+        onClick={scrollToAbout}
+        aria-label="Scroll to about section"
+        className={`absolute bottom-16 left-1/2 -translate-x-1/2 p-4 text-mono-400 hover:text-mono-600 transition-all duration-300 cursor-pointer z-10 ${
+          isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}
+        style={{ transitionDelay: '1000ms' }}
       >
-        {/* Greeting */}
-        <motion.div
-          initial={{ opacity: 0, y: 40, scale: 0.9 }}
-          animate={{ 
-            opacity: 1, 
-            y: 0, 
-            scale: 1,
-            rotate: [0, 1, -1, 0]
-          }}
-          transition={{ 
-            delay: 0.1,
-            duration: 0.6, 
-            ease: [0.25, 0.46, 0.45, 0.94],
-            rotate: { delay: 0.8, duration: 2, ease: "easeInOut" }
-          }}
-          className="mb-6"
-        >
-          <motion.p 
-            className="text-3xl sm:text-4xl md:text-5xl text-blue-400 font-medium tracking-wide"
-            animate={{
-              textShadow: [
-                '0 0 20px rgba(59, 130, 246, 0.4)',
-                '0 0 30px rgba(59, 130, 246, 0.6)',
-                '0 0 20px rgba(59, 130, 246, 0.4)'
-              ]
-            }}
-            transition={{ delay: 1.0, duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          >
-            Hello, I'm
-          </motion.p>
-        </motion.div>
-
-        {/* Name */}
-        <motion.h1
-          initial={{ 
-            opacity: 0, 
-            y: 50, 
-            scale: 0.8,
-            rotateX: 15
-          }}
-          animate={{ 
-            opacity: 1, 
-            y: 0, 
-            scale: 1,
-            rotateX: 0,
-            rotateY: [0, 5, -5, 0]
-          }}
-          transition={{ 
-            delay: 0.3,
-            duration: 0.8,
-            ease: [0.25, 0.46, 0.45, 0.94],
-            rotateY: { delay: 1.2, duration: 4, ease: "easeInOut", repeat: Infinity }
-          }}
-          className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold mb-12 leading-none"
-          style={{
-            background: 'linear-gradient(135deg, #ffffff 0%, #60a5fa 50%, #34d399 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            willChange: 'transform'
-          }}
-          whileHover={isMobile ? {} : {
-            scale: 1.02,
-            rotateY: 5,
-            transition: { duration: 0.2, ease: "easeOut" }
-          }}
-        >
-          Zhenzhao
-        </motion.h1>
-
-        {/* Role Section */}
-        <motion.div
-          variants={textVariants}
-          className="mb-16 space-y-6"
-        >
-          {/* University */}
-          <motion.h2 
-            className="text-2xl sm:text-3xl md:text-4xl text-slate-200 font-light tracking-wide"
-            variants={textVariants}
-          >
-            NUS Computer Engineering Student
-          </motion.h2>
-          
-          {/* Elegant separator */}
-          <motion.div 
-            className="flex items-center justify-center gap-4 my-8"
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={{ opacity: 1, scaleX: 1 }}
-            transition={{ delay: 0.8, duration: 0.6, ease: "easeOut" }}
-          >
-            <motion.div 
-              className="h-px bg-gradient-to-r from-transparent via-blue-400/50 to-transparent flex-1 max-w-20"
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ delay: 0.8, duration: 0.6, ease: "easeOut" }}
-            />
-            <motion.div 
-              className="w-2 h-2 bg-blue-400/60 rounded-full"
-              initial={{ scale: 0 }}
-              animate={{ 
-                scale: [0, 1.2, 1],
-                opacity: [0, 1, 0.6]
-              }}
-              transition={{ 
-                delay: 1.0,
-                duration: 0.8, 
-                ease: "easeOut",
-                repeat: Infinity,
-                repeatDelay: 1.2
-              }}
-            />
-            <motion.div 
-              className="h-px bg-gradient-to-r from-transparent via-blue-400/50 to-transparent flex-1 max-w-20"
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ delay: 0.8, duration: 0.6, ease: "easeOut" }}
-            />
-          </motion.div>
-          
-          {/* Profession */}
-          <motion.h3 
-            className="text-xl sm:text-2xl md:text-3xl text-slate-300 font-light tracking-wide"
-            variants={textVariants}
-          >
-            AI Engineer & Full-Stack Developer
-          </motion.h3>
-        </motion.div>
-
-        {/* Description */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.2, duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="mb-12 max-w-4xl mx-auto"
-        >
-          <motion.p className="text-xl sm:text-2xl md:text-3xl text-slate-400 leading-relaxed">
-            Passionate about transforming ideas into 
-            <motion.span
-              className="text-blue-300 font-medium"
-              animate={{
-                textShadow: [
-                  '0 0 10px rgba(59, 130, 246, 0.5)',
-                  '0 0 20px rgba(59, 130, 246, 0.8)',
-                  '0 0 10px rgba(59, 130, 246, 0.5)'
-                ]
-              }}
-              transition={{ delay: 2.0, duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            >
-              {' '}innovative AI-powered solutions
-            </motion.span>
-            {' '}that bridge cutting-edge technology with real-world impact. I thrive on building technology that makes a meaningful difference in people's lives.
-          </motion.p>
-        </motion.div>
-
-        {/* Call to action */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.8, duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="flex flex-col items-center"
-        >
-          <motion.div
-            className="flex items-center gap-2 text-slate-400 mb-6"
-            animate={{ y: [0, -5, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <ArrowDown size={20} className="text-accent-blue" />
-            <span className="text-lg font-medium">Discover more about me</span>
-            <ArrowDown size={20} className="text-accent-blue" />
-          </motion.div>
-
-          <motion.button
-            onClick={scrollToNext}
-            className="group relative p-4 sm:p-6 bg-gradient-to-br from-dark-card/60 to-dark-card/30 border border-dark-border/50 rounded-full backdrop-blur-sm transition-all duration-500 overflow-hidden"
-            whileTap={{ scale: 0.95 }}
-            aria-label="Scroll to next section"
-            style={{ transformStyle: 'preserve-3d' }}
-          >
-            {/* Rotating background ring */}
-            <motion.div
-              className="absolute inset-0 rounded-full"
-              style={{
-                background: 'conic-gradient(from 0deg, transparent, rgba(96, 165, 250, 0.3), transparent)',
-                padding: '2px'
-              }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-            />
-
-            {/* Arrow Icon */}
-            <motion.div
-              className="relative z-10 text-accent-blue"
-              animate={{
-                y: [0, 8, 0],
-                rotateX: [0, 15, 0]
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            >
-              <ArrowDown size={24} />
-            </motion.div>
-          </motion.button>
-
-          {/* Scroll line indicator */}
-          <motion.div
-            className="w-px h-16 bg-gradient-to-b from-accent-blue/50 to-transparent"
-            initial={{ scaleY: 0 }}
-            animate={{ scaleY: 1 }}
-            transition={{ delay: 2.0, duration: 0.8, ease: "easeOut" }}
-            style={{ transformOrigin: 'top' }}
-          />
-        </motion.div>
-      </motion.div>
+        <ChevronDown size={48} className="animate-bounce" />
+      </button>
     </section>
   )
 }
