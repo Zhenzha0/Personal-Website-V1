@@ -12,19 +12,52 @@ export function ContactSection() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    setSubmitted(true)
-    setIsSubmitting(false)
-    setFormData({ name: '', email: '', subject: '', message: '' })
-    
-    setTimeout(() => setSubmitted(false), 3000)
+    setError('')
+
+    const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY
+
+    if (!accessKey) {
+      setError('Contact form is not configured yet. Please email me directly.')
+      setIsSubmitting(false)
+      return
+    }
+
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify({
+          access_key: accessKey,
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+          from_name: 'Portfolio Contact Form'
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setSubmitted(true)
+        setFormData({ name: '', email: '', subject: '', message: '' })
+        setTimeout(() => setSubmitted(false), 4000)
+      } else {
+        setError(result.message || 'Something went wrong. Please try again or email me directly.')
+      }
+    } catch {
+      setError('Network error. Please try again or email me directly.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const scrollToTop = () => {
@@ -113,6 +146,17 @@ export function ContactSection() {
                   </>
                 )}
               </button>
+
+              {submitted && (
+                <p className="text-warm-600 text-base lg:text-lg font-medium">
+                  Thanks! Your message has been sent—I&apos;ll get back to you soon.
+                </p>
+              )}
+              {error && (
+                <p className="text-red-600 text-base lg:text-lg font-medium">
+                  {error}
+                </p>
+              )}
             </form>
           </div>
 

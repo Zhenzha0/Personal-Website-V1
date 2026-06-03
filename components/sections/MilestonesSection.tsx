@@ -6,6 +6,14 @@ import { Briefcase, GraduationCap, Calendar, Download } from 'lucide-react'
 
 const experiences = [
   {
+    id: 'psa',
+    title: 'Data Engineer Intern',
+    company: 'PSA International',
+    period: 'May 2026 – Present',
+    description: 'Designing and implementing data pipelines, ETL processes, and data warehousing solutions on Databricks for PSA\u2019s next-generation data analytics platform across port and business operations. Building interactive Power BI dashboards and supporting infrastructure optimisation while collaborating with cross-functional teams to translate data requirements into pipeline design.',
+    logo: '/logos/psa.png'
+  },
+  {
     id: 'massivue',
     title: 'AI Engineer Intern',
     company: 'Massivue',
