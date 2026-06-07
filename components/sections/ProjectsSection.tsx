@@ -202,7 +202,20 @@ export function ProjectsSection() {
           <h2 className="heading text-5xl md:text-6xl lg:text-7xl xl:text-8xl text-mono-black mb-6">
             PROJECTS<span className="text-warm-600">.</span>
           </h2>
-          <div className="w-20 h-1.5 bg-warm-600" />
+          <div className="w-20 h-1.5 bg-warm-600 mb-6" />
+          <p className="text-mono-600 text-lg lg:text-xl max-w-3xl leading-relaxed">
+            A collection of my projects. For the school and university module projects
+            I&apos;ve worked on, please visit my{' '}
+            <a
+              href="https://github.com/Zhenzha0"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-warm-600 hover:text-warm-500 underline underline-offset-2 transition-colors"
+            >
+              GitHub
+            </a>
+            {' '}&mdash; there are too many to display here.
+          </p>
         </div>
 
         {/* Projects Grid - Larger cards with cover images */}
@@ -335,9 +348,21 @@ export function ProjectsSection() {
                       Pitch
                     </a>
                   )}
+                  {project.demoVideoUrl && !project.demoUrl && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedProject(project)
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 bg-warm-50 hover:bg-warm-100 text-warm-600 text-sm rounded-lg transition-all border border-warm-200"
+                    >
+                      <Play size={16} />
+                      Demo
+                    </button>
+                  )}
                   {project.isConfidential && (
                     <span className="text-mono-400 text-sm italic">
-                      Code & demo confidential
+                      Code confidential
                     </span>
                   )}
                 </div>
@@ -482,7 +507,7 @@ export function ProjectsSection() {
                 )}
                 {selectedProject.isConfidential && (
                   <span className="text-mono-400 text-sm italic">
-                    Live site and code are confidential and cannot be shared publicly.
+                    Source code is confidential and cannot be shared publicly.
                   </span>
                 )}
               </div>
